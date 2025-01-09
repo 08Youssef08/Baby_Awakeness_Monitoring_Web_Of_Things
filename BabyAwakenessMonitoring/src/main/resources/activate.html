@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activate Account</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("verify").onclick = async function () {
+                const code = document.getElementById("code").value;
+                const activationUrl = `http://localhost:8080/users/register/activate?activation_code=${encodeURIComponent(code)}`;
+                const response = await fetch(activationUrl, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+                if(response.ok){
+                    const authLayout = document.querySelector(".auth-layout");
+                    authLayout.innerHTML = `
+        <div style="
+            background: #eff2f6;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        ">
+            <h2 style="
+                font-size: 1.75rem;
+                color: #333;
+                margin-bottom: 1rem;
+            ">Registration Successful!</h2>
+            <p style="
+                font-size: 1.75rem;
+                color: #777;
+                margin-bottom: 1rem;
+            ">Welcome To babyawakenessmonitoring!</p>
+            <p style="
+                font-size: 1rem;
+                color: #777;
+            ">You can now
+                <a href="http://localhost:8080/" style="
+                    color: #007bff;
+                    text-decoration: none;
+                    font-weight: bold;
+                ">Sign In</a>.
+            </p>
+            </div>
+        </div>
+    `;
+
+
+                }else {
+                    console.error("Authentication failed:", response.status);
+                    const errorMessage = await response.text();
+                    console.error("Error message:", errorMessage);
+                }
+            };
+
+
+        });
+
+    </script>
+
+    <style>* {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        color: #fff;
+        text-align: center;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Prevent scrollbars */
+    }
+
+    /* Auth Layout Styles */
+    .auth-layout {
+        background: #eff2f6;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 420px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .auth-layout:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .auth-layout h1 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        color: #333;
+        text-align: center;
+    }
+
+    .auth-layout p {
+        margin-bottom: 1.5rem;
+        color: #777;
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 40px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+        outline: none;
+        transition: 0.3s ease;
+    }
+
+    .form-group input:focus {
+        border-color: #a6ffe0;
+        box-shadow: 0 0 5px rgba(99, 102, 241, 0.3);
+    }
+
+    .form-group p {
+        position: absolute;
+        top: 48%;
+        left: 10px;
+        transform: translateY(-50%);
+        font-size: 1.3rem;
+        color: #aaa;
+    }
+
+    .form-group .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: -130px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 1.4rem;
+    }
+
+    .form-group .toggle-password:hover {
+        color: #24c790;
+    }
+
+    .error-message {
+        margin-top: 4px;
+        font-size: 0.85rem;
+        color: red;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: white;
+        color: #53e3a6;
+        border: none;
+    }
+
+    button:hover {
+        background-color: #53e3a6;
+        color: white;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .auth-footer a {
+        color: #000000;
+        text-decoration: none;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* Welcome Page Styles */
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+    }
+
+    header {
+        background-color: #7aa95c;
+        color: white;
+        padding: 20px 0;
+    }
+
+    h1 {
+        margin: 0;
+    }
+
+    .intro {
+        margin: 20px 0;
+    }
+
+    .actions {
+        margin: 30px 0;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 10px;
+        background-color: #7aa95c;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+
+    footer {
+        margin-top: 40px;
+        font-size: 0.8em;
+        color: #777;
+    }
+    </style>
+</head>
+
+<body>
+<div class="auth-layout">
+    <h1>Welcome To Baby Awakeness Monitoring</h1>
+    <p style="font-size: 20px">Activation code is sent to your Email</p>
+    <form>
+        <div class="form-group">
+            <p>🔒</p>
+            <input type="code" id="code" placeholder="Activation Code" required>
+            <div class="error-message" id="passwordError"></div>
+        </div>
+        <button type="button" id="verify">Verify</button>
+    </form>
+</div>
+</body>
+
+</html>

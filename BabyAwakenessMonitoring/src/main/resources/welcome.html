@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Configuration...</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .button {
+            display: block;
+            width: 250px;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: white;
+            color: #53e3a6;
+            cursor: pointer;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        button:hover {
+            background-color: #53e3a6;
+            color: white;
+        }
+
+        .button:focus {
+            background-color: white;
+            color: #53e3a6;
+            width: 300px;
+        }
+
+        .night {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            transform: rotateZ(45deg);
+        }
+
+        .shooting_star {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(-45deg, rgba(240, 230, 255, 1), rgba(240, 230, 255, 0));
+            border-radius: 999px;
+            filter: drop-shadow(0 0 8px rgba(240, 230, 255, 1));
+            animation: tail 5000ms ease-in-out infinite, shooting 5000ms ease-in-out infinite;
+        }
+
+        @keyframes tail {
+            0% { width: 0; }
+            30% { width: 100px; }
+            100% { width: 0; }
+        }
+
+        @keyframes shooting {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(300px, 300px); }
+        }
+
+        .shooting_star:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .shooting_star:nth-child(2) { top: 40%; left: 30%; animation-delay: 1s; }
+        .shooting_star:nth-child(3) { top: 60%; left: 70%; animation-delay: 3s; }
+        .shooting_star:nth-child(4) { top: 50%; left: 80%; animation-delay: 5s; }
+        .shooting_star:nth-child(5) { top: 30%; left: 90%; animation-delay: 7s; }
+        .shooting_star:nth-child(6) { top: 10%; left: 50%; animation-delay: 2s; }
+        .shooting_star:nth-child(7) { top: 80%; left: 40%; animation-delay: 4s; }
+        .shooting_star:nth-child(8) { top: 70%; left: 20%; animation-delay: 6s; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            async function generateRandomString(length) {
+                const array = new Uint32Array(length);
+                window.crypto.getRandomValues(array);
+                return Array.from(array, (dec) => ("0" + dec.toString(16)).substr(-2)).join("");
+            }
+
+            async function sha256(plain) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plain);
+                return window.crypto.subtle.digest("SHA-256", data);
+            }
+
+            function base64urlencode(str) {
+                return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
+                    .replace(/\+/g, "-")
+                    .replace(/\//g, "_")
+                    .replace(/=+$/, "");
+            }
+
+            async function pkceChallengeFromVerifier(v) {
+                const hashed = await sha256(v);
+                return base64urlencode(hashed);
+            }
+
+            document.getElementById("signInButton").onclick = async function () {
+                try {
+                    var client_id = await generateRandomString(28);
+                    var code_verifier = await generateRandomString(28);
+                    localStorage.setItem("codeverif", code_verifier);
+                    var code_challenge = await pkceChallengeFromVerifier(code_verifier);
+
+                    const url = `http://localhost:8080/authorize?client_id=${client_id}&code_challenge=${code_challenge}`;
+                    const response = await fetch(url, {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                    });
+
+                    if (response.status === 302) {
+                        const redirectUrl = response.headers.get("Location");
+                        window.location.href = redirectUrl;
+                    } else if (response.status === 200) {
+                        const htmlContent = await response.text();
+                        document.open();
+                        document.write(htmlContent);
+                        document.close();
+                        console.log("Authorization completed successfully!");
+                    } else {
+                        console.error("Unexpected response status:", response.status);
+                    }
+                } catch (error) {
+                    console.error("Error during sign-in:", error);
+                }
+            };
+        });
+    </script>
+</head>
+<body>
+<h1>Loading Configuration...</h1>
+<div class="button-container">
+    <button class="button" type="button" id="signInButton">Sign In</button>
+    <button class="button" onclick="window.location.href='http://localhost:8080/signup'">Sign Up</button>
+</div>
+<div class="night">
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+</div>
+</body>
+</html>

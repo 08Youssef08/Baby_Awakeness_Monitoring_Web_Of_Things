@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("signInButton").onclick = async function () {
+                const email = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+                var formData = new URLSearchParams();
+                formData.append("email", email);
+                formData.append("password", password);
+                const response = await fetch("http://localhost:8080/authenticate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: formData.toString(),
+                });
+                if(response.ok){
+                    console.log('Athentication completed successfully..generating access token and refresh token!')
+                    const authData = await response.json();
+                    const authorizationCode = authData.AuthorizationCode;
+                    const code_verifier = localStorage.getItem("codeverif");
+                    const tokenUrl = `http://localhost:8080/oauth/token?authorization_code=${encodeURIComponent(authorizationCode)}&code_verifier=${encodeURIComponent(code_verifier)}`;
+                    fetch(tokenUrl, {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                    })
+                        .then(tokenData => tokenData.json())
+                        .then(tokenData => {
+                            localStorage.setItem("accessToken", tokenData.accessToken);
+                            localStorage.removeItem("codeverif");
+                            // Redirect to the app root after successful token retrieval
+                            window.location.href = "http://127.0.0.1:5000/";
+                        })
+                        .catch(err => console.error("Error in getting token:", err));
+                }else {
+                    console.error("Authentication failed:", response.status);
+                    const errorMessage = await response.text();
+                    console.error("Error message:", errorMessage);
+                }
+            };
+        });
+    </script>
+    <style>
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            z-index: 1; /* Place overlay on top of other elements */
+        }
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wrapper.form-success {
+            background: #1b2735; /* Animation: change background color */
+            transition: background 0.5s ease;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: white;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .wrapper.form-success h1 {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+
+        .form {
+            padding: 20px 0;
+            z-index: 2;
+        }
+
+        input, button {
+            display: block;
+            width: 250px;
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        input:hover, button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus {
+            background-color: white;
+            color: #53e3a6;
+            width: 300px;
+        }
+
+        button {
+            background-color: white;
+            color: #53e3a6;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #53e3a6;
+            color: white;
+        }
+        .login-container {
+            position: relative; /* Position relative to the overlay */
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 2; /* Place above overlay */
+        }
+
+
+
+        /* Night and Shooting Stars */
+        .night {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Place stars in the background */
+            transform: rotateZ(45deg); /* For diagonal shooting effect */
+        }
+
+        .shooting_star {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(-45deg, rgba(240, 230, 255, 1), rgba(240, 230, 255, 0));
+            border-radius: 999px;
+            filter: drop-shadow(0 0 8px rgba(240, 230, 255, 1));
+            animation: tail 5000ms ease-in-out infinite, shooting 5000ms ease-in-out infinite;
+        }
+
+        @keyframes tail {
+            0% { width: 0; }
+            30% { width: 100px; }
+            100% { width: 0; }
+        }
+
+        @keyframes shooting {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(300px, 300px); }
+        }
+
+        /* Randomize Stars */
+        .shooting_star:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shooting_star:nth-child(2) {
+            top: 40%;
+            left: 30%;
+            animation-delay: 1s;
+        }
+
+        .shooting_star:nth-child(3) {
+            top: 60%;
+            left: 70%;
+            animation-delay: 3s;
+        }
+
+        .shooting_star:nth-child(4) {
+            top: 50%;
+            left: 80%;
+            animation-delay: 5s;
+        }
+
+        .shooting_star:nth-child(5) {
+            top: 30%;
+            left: 90%;
+            animation-delay: 7s;
+        }
+
+        .shooting_star:nth-child(6) {
+            top: 10%;
+            left: 50%;
+            animation-delay: 2s;
+        }
+
+        .shooting_star:nth-child(7) {
+            top: 80%;
+            left: 40%;
+            animation-delay: 4s;
+        }
+
+        .shooting_star:nth-child(8) {
+            top: 70%;
+            left: 20%;
+            animation-delay: 6s;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+    <h2> Sign In</h2>
+    <form id="signInForm" method="post">
+        <label for="username">Email:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="button" id="signInButton">Sign In</button>
+        <button type="button" onclick="window.location.href='./forgetpassword.html'" id="forgetPasswordLink">Forget Password</button>
+    </form>
+</div>
+<div class="night">
+    <!-- Multiple shooting stars -->
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+    <div class="shooting_star"></div>
+</div>
+
+</body>
+
+</html>
